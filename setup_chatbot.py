@@ -16,7 +16,7 @@ def check_env_file():
         print("\n📝 Please create a .env file with the following variables:")
         print("""
 # OpenAI API Configuration
-OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_API_KEY=your_openai_api_key_placeholder
 
 # Pinecone Configuration  
 PINECONE_API_KEY=your_pinecone_api_key_here
