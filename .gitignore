@@ -68,4 +68,4 @@ mr_links
 
 # OS files
 .DS_Store
-Thumbs.db 
+Thumbs.db .env

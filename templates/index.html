@@ -115,6 +115,7 @@
         const chatBox = document.getElementById("chatBox");
         const userInput = document.getElementById("userInput");
         let chatHistory = [];
+        let sessionId = null;
 
         function formatMessage(text) {
             // Convert URLs to clickable links
@@ -158,7 +159,11 @@
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ user_input: input, history: chatHistory })
+                body: JSON.stringify({ 
+                    user_input: input, 
+                    history: chatHistory,
+                    session_id: sessionId
+                })
             })
                 .then(res => res.json())
                 .then(data => {
@@ -168,8 +173,12 @@
                         addMessage(data.answer, "bot");
                         // Update chat history
                         chatHistory.push({ user: input, bot: data.answer });
+                        // Store session ID for future requests
+                        if (data.session_id) {
+                            sessionId = data.session_id;
+                        }
                     } else {
-                        addMessage("Sorry, I didn’t understand that.", "bot");
+                        addMessage("Sorry, I didn't understand that.", "bot");
                     }
                 })
                 .catch(err => {

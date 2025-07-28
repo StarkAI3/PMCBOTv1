@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-PMC Chatbot Server
-Serves both the FastAPI backend and HTML frontend
+PMC Chatbot Server (Improved)
+Serves both the FastAPI backend and HTML frontend with enhanced functionality
 """
 
 import os
@@ -15,11 +15,11 @@ import sys
 # Add the chatbot directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'chatbot'))
 
-# Import the chatbot API - using OpenAI version for correct embedding model
-from chatbot_api_gpt4o import app as chatbot_app
+# Import the improved chatbot API
+from chatbot_api_improved import app as chatbot_app
 
 # Create main app
-app = FastAPI(title="PMC Chatbot", version="1.0.0")
+app = FastAPI(title="PMC Chatbot (Improved)", version="2.0.0")
 
 # Add CORS middleware
 app.add_middleware(
@@ -44,20 +44,25 @@ async def read_index():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "service": "PMC Chatbot"}
+    return {"status": "healthy", "service": "PMC Chatbot (Improved)", "version": "2.0.0"}
 
 if __name__ == "__main__":
-    print("🚀 Starting PMC Chatbot Server...")
+    print("🚀 Starting PMC Chatbot Server (Improved)...")
     print("📝 Make sure you have set up your .env file with:")
     print("   - OPENAI_API_KEY")
     print("   - PINECONE_API_KEY")
     print("   - PINECONE_INDEX")
+    print("\n🔧 Improvements in this version:")
+    print("   ✅ Better link validation (no invalid URLs)")
+    print("   ✅ Enhanced latest circular detection")
+    print("   ✅ Improved date sorting")
+    print("   ✅ Better context handling")
     print("\n🌐 Server will be available at: http://localhost:8000")
     print("📱 Frontend: http://localhost:8000")
     print("🔌 API: http://localhost:8000/api")
     
     uvicorn.run(
-        "run_chatbot_server:app",
+        "run_chatbot_server_improved:app",
         host="0.0.0.0",
         port=8000,
         reload=True,
