@@ -5,7 +5,7 @@ from collections import deque
 from fastapi.middleware.cors import CORSMiddleware
 import openai
 import os
-from .terminal_chatbot_v2 import (
+from terminal_chatbot_openai import (
     detect_language, is_followup_query, is_latest_query, embed_query, index, TOP_K, CONTEXT_RESULTS, format_pinecone_results, build_llm_prompt, remove_duplicate_links
 )
 from dotenv import load_dotenv

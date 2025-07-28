@@ -56,6 +56,52 @@ def filter_metadata(meta):
             filtered[k] = v
     return filtered
 
+def extract_text_for_embedding(rec):
+    """Enhanced text extraction for better semantic search."""
+    text_parts = []
+    
+    # Use the enhanced full_content if available
+    if rec.get('full_content'):
+        text_parts.append(rec['full_content'])
+    else:
+        # Fallback to original method
+        title = rec.get('title', '')
+        if title:
+            text_parts.append(f"Title: {title}")
+        
+        description = rec.get('description')
+        if description:
+            text_parts.append(f"Description: {description}")
+        
+        # Add other important fields
+        long_desc = rec.get('long_description')
+        if long_desc:
+            text_parts.append(f"Details: {long_desc}")
+        
+        summary = rec.get('summary')
+        if summary:
+            if isinstance(summary, list):
+                for item in summary:
+                    text_parts.append(f"Summary: {item}")
+            else:
+                text_parts.append(f"Summary: {summary}")
+    
+    # Add department and ward information for better context
+    department = rec.get('department')
+    if department:
+        text_parts.append(f"Department: {department}")
+    
+    ward_name = rec.get('ward_name')
+    if ward_name:
+        text_parts.append(f"Ward: {ward_name}")
+    
+    # Add record type for better categorization
+    record_type = rec.get('record_type')
+    if record_type and record_type != 'other':
+        text_parts.append(f"Type: {record_type}")
+    
+    return "\n".join(text_parts)
+
 def main():
     records = []
     with open(DATA_FILE, 'r', encoding='utf-8') as f:
@@ -63,16 +109,39 @@ def main():
             rec = json.loads(line)
             records.append(rec)
     print(f'Total records to embed: {len(records)}')
+    
+    # Print some statistics
+    type_counts = {}
+    lang_counts = {}
+    for rec in records:
+        rec_type = rec.get('record_type', 'unknown')
+        type_counts[rec_type] = type_counts.get(rec_type, 0) + 1
+        lang = rec.get('lang', 'unknown')
+        lang_counts[lang] = lang_counts.get(lang, 0) + 1
+    
+    print(f'\nRecord type distribution:')
+    for rec_type, count in sorted(type_counts.items(), key=lambda x: x[1], reverse=True):
+        print(f'  {rec_type}: {count}')
+    
+    print(f'\nLanguage distribution:')
+    for lang, count in sorted(lang_counts.items(), key=lambda x: x[1], reverse=True):
+        print(f'  {lang}: {count}')
+    
     batch = []
     for rec in tqdm(records, desc='Embedding and upserting'):
-        text = rec.get('title', '')
-        if rec.get('description'):
-            text += '\n' + rec['description']
+        # Use enhanced text extraction
+        text = extract_text_for_embedding(rec)
+        
+        # Skip if no meaningful text
+        if not text or len(text.strip()) < 10:
+            continue
+        
         # Chunk if too large
         if len(text) > 30000:
             chunks = chunk_text(text)
         else:
             chunks = [text]
+        
         for i, chunk in enumerate(chunks):
             chunk_id = f"{rec['id']}_chunk{i+1}" if len(chunks) > 1 else rec['id']
             embedding = embed_text(chunk)
@@ -83,11 +152,14 @@ def main():
                 meta['text'] = chunk
                 meta = filter_metadata(meta)
                 batch.append({'id': chunk_id, 'values': embedding, 'metadata': meta})
+            
             if len(batch) >= BATCH_SIZE:
                 index.upsert(vectors=batch)
                 batch = []
+    
     if batch:
         index.upsert(vectors=batch)
+    
     print('Embedding and upsert complete.')
 
 if __name__ == '__main__':

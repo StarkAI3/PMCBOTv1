@@ -153,7 +153,7 @@
             chatBox.appendChild(loadingMsg);
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            fetch("http://localhost:8000/chat", {
+            fetch("http://localhost:8000/api/chat", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
